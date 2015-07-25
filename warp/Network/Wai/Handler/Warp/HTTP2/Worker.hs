@@ -139,14 +139,14 @@ waiter tvar sq enq strm pri = do
     mx <- atomically $ do
         mout <- readTVar tvar
         case mout of
-            SyncNone     -> retry
-            SyncNext nxt -> do
+            SyncNone            -> retry
+            SyncNext nxt        -> do
                 writeTVar tvar SyncNone
-                return $ Just nxt
-            SyncFinish   -> return Nothing
+                return $ Right nxt
+            SyncFinish trailers -> return $ Left trailers
     case mx of
-        Nothing -> return ()
-        Just next -> do
+        Left  trailers -> enq (OTrailers strm trailers) pri
+        Right next     -> do
             atomically $ do
                 isEmpty <- isEmptyTBQueue sq
                 when isEmpty retry

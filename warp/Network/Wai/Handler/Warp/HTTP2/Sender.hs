@@ -364,7 +364,7 @@ nextForStream :: Buffer -> BufSize -> TBQueue Sequence -> TVar Sync
               -> Leftover -> Bool -> BytesFilled
               -> IO Next
 nextForStream _  _ _  tvar _ False len = do
-    atomically $ writeTVar tvar SyncFinish
+    atomically $ writeTVar tvar $ SyncFinish []
     return $ Next len CFinish
 nextForStream buf siz sq tvar LZero True len = do
     atomically $ writeTVar tvar $ SyncNext (fillBufStream buf siz LZero sq tvar)

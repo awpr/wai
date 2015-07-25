@@ -79,7 +79,7 @@ data Sequence = SFinish
               | SBuilder Builder
 
 data Sync = SyncNone
-          | SyncFinish
+          | SyncFinish Trailers
           | SyncNext DynaNext
 
 data Aux = Oneshot Bool
