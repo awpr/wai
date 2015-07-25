@@ -108,7 +108,7 @@ instance Show Request where
 data Response
     = ResponseFile H.Status H.ResponseHeaders FilePath (Maybe FilePart)
     | ResponseBuilder H.Status H.ResponseHeaders Builder
-    | ResponseStream H.Status H.ResponseHeaders StreamingBody
+    | ResponseStream H.Status H.ResponseHeaders (StreamingBodyResult Trailers)
     | ResponseRaw (IO B.ByteString -> (B.ByteString -> IO ()) -> IO ()) Response
   deriving Typeable
 
@@ -118,7 +118,17 @@ data Response
 -- client.
 --
 -- Since 3.0.0
-type StreamingBody = (Builder -> IO ()) -> IO () -> IO ()
+type StreamingBody = StreamingBodyResult ()
+
+-- | Like StreamingBody, but with a final result.  This is used to return
+-- HTTP/2 trailers.
+--
+-- Since 3.2.0
+-- TODO(awpr): what will the version number actually be?
+type StreamingBodyResult a = (Builder -> IO ()) -> IO () -> IO a
+
+-- | Headers sent after the end of a data stream, as defined by HTTP/2.
+type Trailers = H.ResponseHeaders
 
 -- | The size of the request body. In the case of chunked bodies, the size will
 -- not be known.

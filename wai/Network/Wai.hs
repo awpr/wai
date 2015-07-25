@@ -64,12 +64,15 @@ module Network.Wai
       -- * Response
     , Response
     , StreamingBody
+    , StreamingBodyResult
+    , Trailers
     , FilePart (..)
       -- ** Response composers
     , responseFile
     , responseBuilder
     , responseLBS
     , responseStream
+    , responseStreamTrailers
     , responseRaw
       -- ** Response accessors
     , responseStatus
@@ -161,7 +164,21 @@ responseStream :: H.Status
                -> H.ResponseHeaders
                -> StreamingBody
                -> Response
-responseStream = ResponseStream
+responseStream st hdr = ResponseStream st hdr . devoidStreamingBody
+
+responseStreamTrailers :: H.Status
+                       -> H.ResponseHeaders
+                       -> StreamingBodyResult Trailers
+                       -> Response
+responseStreamTrailers = ResponseStream
+
+-- | Turn a 'StreamingBody' into a @StreamingBodyResult Trailers@ where the
+-- trailer list is empty.
+--
+-- It's a pun on \"devoid\" the word and \"de-void\" the pseudo-inverse of
+-- 'void'.
+devoidStreamingBody :: StreamingBody -> StreamingBodyResult Trailers
+devoidStreamingBody b = (fmap (const []).) . b
 
 -- | Create a response for a raw application. This is useful for \"upgrade\"
 -- situations such as WebSockets, where an application requests for the server
@@ -201,7 +218,11 @@ responseToStream :: Response
                     , H.ResponseHeaders
                     , (StreamingBody -> IO a) -> IO a
                     )
-responseToStream (ResponseStream s h b) = (s, h, ($ b))
+responseToStream (ResponseStream s h b) =
+    ( s
+    , h
+    , ($ \send flush -> fmap (const ()) $ b send flush)
+    )
 responseToStream (ResponseFile s h fp (Just part)) =
     ( s
     , h

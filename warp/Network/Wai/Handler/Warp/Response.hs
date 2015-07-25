@@ -221,7 +221,7 @@ sendResponse defServer conn ii req reqidxhdr src response = do
 
 data Rsp = RspFile FilePath (Maybe FilePart) (Maybe HeaderValue) Bool (IO ())
          | RspBuilder Builder Bool
-         | RspStream StreamingBody Bool T.Handle
+         | RspStream (StreamingBodyResult Trailers) Bool T.Handle
          | RspRaw (IO ByteString -> (ByteString -> IO ()) -> IO ()) (IO ByteString) (IO ())
 
 ----------------------------------------------------------------
