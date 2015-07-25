@@ -126,6 +126,12 @@ worker ctx@Context{inputQ,outputQ} set tm app responder = do
                     Just e  -> S.settingsOnException set (Just req) e
                 clearStreamInfo sinfo
 
+-- | As long as the 'Stream' is alive, deposit its 'Output's onto the queue
+-- whenever they are available.
+--
+-- Streams effectively suspend themselves to wait for more data by writing to
+-- this 'TVar', and this action watches for them to become ready and deposits
+-- them back in the connection's top-level output queue.
 waiter :: TVar Sync -> TBQueue Sequence
        -> (Output -> Priority -> IO ()) -> Stream -> Priority
        -> IO ()
