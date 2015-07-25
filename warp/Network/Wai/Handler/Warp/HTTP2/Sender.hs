@@ -131,6 +131,14 @@ frameSender ctx@Context{outputQ,connectionWindow}
             Next datPayloadLen mnext <- curr lim
             fillDataHeaderSend strm 0 datPayloadLen mnext pri
         loop
+    switch (OTrailers strm trailers) _ = do
+        -- Trailers always indicate the end of a stream; send them in
+        -- consecutive header+continuation frames and end the stream.
+        builder <- hpackEncodeTrailers ctx trailers
+        off <- headerContinue (streamNumber strm) builder True
+        closed ctx strm Finished
+        bufferIO connWriteBuffer (off + frameHeaderLength) connSendAll
+        loop
 
     -- Write header and possibly continuation frames into the connection
     -- buffer, using the given builder as their contents.
