@@ -68,8 +68,8 @@ response Context{outputQ} mgr tconf th strm pri req rsp = do
             -- queue, we spawn a thread to ensure that the designated
             -- queue is not empty.
             void $ forkIO $ waiter tvar sq (enqueue outputQ) strm pri
-            strmbdy push flush
-            atomically $ writeTBQueue sq SFinish
+            trailers <- strmbdy push flush
+            atomically $ writeTBQueue sq $ SFinish trailers
         _ -> do
             setThreadContinue tconf True
             let hasBody = requestMethod req /= H.methodHead

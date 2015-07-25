@@ -324,7 +324,7 @@ runStreamBuilder buf0 room0 sq = loop buf0 room0 0
                     B.More  _ writer  -> return (LOne writer, Nothing, total')
                     B.Chunk bs writer -> return (LTwo bs writer, Nothing, total')
             Just SFlush  -> return (LZero, Nothing, total)
-            Just SFinish -> return (LZero, Just [], total)
+            Just (SFinish trailers) -> return (LZero, Just trailers, total)
 
 fillBufStream :: Buffer -> BufSize -> Leftover -> TBQueue Sequence -> TVar Sync -> DynaNext
 fillBufStream buf0 siz0 leftover0 sq tvar lim0 = do

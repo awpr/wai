@@ -74,7 +74,7 @@ data Output = OFinish
 
 ----------------------------------------------------------------
 
-data Sequence = SFinish
+data Sequence = SFinish Trailers
               | SFlush
               | SBuilder Builder
 
